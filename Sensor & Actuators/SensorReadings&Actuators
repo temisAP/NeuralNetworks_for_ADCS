@@ -10,7 +10,7 @@
 -VCC - VCC
 -SDA - Pin A4
 -SCL - Pin A5
--INT - Pin 2 // this pin allows for the use of DMP (Digital Motion Processor) onboard the MPU-6050 chip
+-INT - Pin 2 // this pin allows for the use of DMP (Digital Motion Processor) onboard the MPU-6050 chip. This significantly simplifies the process of obtaining filtered rotation data from the sensor
 
 ===Software===
 - Arduino IDE v1.8.42
@@ -19,26 +19,27 @@
 - MPU6050.h -->  https://github.com/jrowberg/i2cdevlib
  */
 
-/* INCLUDE LIBRARIES */
-//#include <Wire.h>
+/* NOTE!!!!!!!!!!
+Se muestran las lecturas obtenidas con varios métodos para determinar cual es preferible usar. Los que no se usen se podrán borrar.
+Funcionan:    - ángulo de giro del acelerómetro
+              - datos de aceleración, en g (1g = 9.81)
+              - ángulo de giro obtenido usando el DMP integrado en el MPU6050
+No funcionan: - ángulo de giro del giroscopio
+                --> ángulo de giro con filtro High Pass y Low Pass */
+
+/***********************  INCLUDE LIBRARIES ************************/
 #include<I2Cdev.h>
-//#include<MPU6050.h>
 #include <math.h>
-#include <MPU6050_6Axis_MotionApps20.h>
+#include <MPU6050_6Axis_MotionApps20.h>               // esta libreria incluye las funciones para usar el DMP
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-    #include <Wire.h>
+    #include <Wire.h>                                 // incluir la libreria incluida de Arduino Wire.h de manera que no interfiera con MPU6050_6Axis_MotionApps20.h
 #endif
 
-
-/* SET PARAMETER NAMES */
+/***********************  Define parameters ************************/
 //const int mpuAddress = 0x68;  // Puede ser 0x68 o 0x69
 //MPU6050 mpu(mpuAddress);
 MPU6050 mpu;
 
-//long gyroX, gyroY, gyroZ;
-//float rotX, rotY, rotZ;
-//int16_t ax, ay, az;
-//int16_t gx, gy, gz;
 long accelX, accelY, accelZ;
 
 float gForceX, gForceY, gForceZ;
@@ -48,7 +49,7 @@ float currentAngleX, currentAngleY, currentAngleZ, prevAngleX=0, prevAngleY=0, p
 unsigned long currTime, prevTime=0, loopTime;
 float dt;
 
-//
+// definir parámetros del DMP // no todos son necesarios
 bool dmpReady = false;  // set true if DMP init was successful
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
 uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
@@ -56,6 +57,7 @@ uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
 uint16_t fifoCount;     // count of all bytes currently in FIFO
 uint8_t fifoBuffer[64]; // FIFO storage buffer
 
+// definir Quaternion y vectores para las lecturas del DMP
 Quaternion q;           // [w, x, y, z]
 VectorInt16 aa;         // [x, y, z]
 VectorInt16 aaReal;     // [x, y, z]
@@ -64,12 +66,13 @@ VectorFloat gravity;    // [x, y, z]
 float ypr[3];           // [yaw, pitch, roll]
 
 volatile bool mpuInterrupt = false;
-//
 
 #define sampleTime 0.005
 
-//DMP connection (Sensor)
+/***********************  Define connections ************************/
+//DMP connection (Sensor) // El MPU6050 se conecta al pin 2 (digital) del Arduino para activar la funcionalidad del DMP
 #define INTERRUPT_PIN 2
+
 // Motor A connections
 #define enA 9
 #define in1 8
@@ -79,20 +82,13 @@ volatile bool mpuInterrupt = false;
 #define in3 5
 #define in4 4
 
-//// Motor A connections
-//int enA = 9;
-//int in1 = 8;
-//int in2 = 7;
-//// Motor B connections
-//int enB = 3;
-//int in3 = 5;
-//int in4 = 4;
-
 void dmpDataReady() {
     mpuInterrupt = true;
 }
 
-/* VOID SETUP */
+/******************************************************************
+* Void Setup
+******************************************************************/
 void setup() {
   //
   #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -103,29 +99,26 @@ void setup() {
     #endif
     //
   mpu.initialize();
-          /////////////////////////////////////// ACCEL
-  mpu.setXAccelOffset(-2842); // from calibration routine
-  mpu.setYAccelOffset(-21); // from calibration routine
-  mpu.setZAccelOffset(1088); // from calibration routine
 
-        ////////////////////////////////////// GYRO
-  mpu.setXGyroOffset(25); // from calibration routine
-  mpu.setYGyroOffset(-24); // from calibration routine
-  mpu.setZGyroOffset(5); // from calibration routine
+/***********************  Define offsets ************************/
+  mpu.setXAccelOffset(-2842); // from calibration sketch
+  mpu.setYAccelOffset(-21); // from calibration sketch
+  mpu.setZAccelOffset(1088); // from calibration sketch
+
+  mpu.setXGyroOffset(25); // from calibration sketch
+  mpu.setYGyroOffset(-24); // from calibration sketch
+  mpu.setZGyroOffset(5); // from calibration sketch
 
   Serial.begin(115200);
   Wire.begin();
 
-  //setupMPU();
-  //pinMode(pin2,OUTPUT);
-
   // Set all the motor control pins to outputs
-  pinMode(enA, OUTPUT);
-  pinMode(enB, OUTPUT);
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
-  pinMode(in3, OUTPUT);
-  pinMode(in4, OUTPUT);
+  pinMode(enA, OUTPUT);   // MOTOR 1
+  pinMode(enB, OUTPUT);   // MOTOR 2
+  pinMode(in1, OUTPUT);   // MOTOR 1
+  pinMode(in2, OUTPUT);   // MOTOR 1
+  pinMode(in3, OUTPUT);   // MOTOR 2
+  pinMode(in4, OUTPUT);   // MOTOR 2
 
   // Turn off motors - Initial state
   digitalWrite(in1, LOW);
@@ -180,33 +173,39 @@ void setup() {
 
 }
 
-/* -------------------------- SETUP -------------------------- */
+/******************************************************************
+* Void Loop
+******************************************************************/
 void loop() {
   setupMPU();
-  //mpu.getMotion6(&accX, &accY, &accZ, &gyroX, &gyroY, &gyroZ); ////  Assign MPU6050 readings to the respective int16_t
   mpu.getAcceleration(&accX, &accY, &accZ);
   mpu.getRotation(&gyroX, &gyroY, &gyroZ);
   recordAccelGryoRegisters();
   complementaryFilter();
-  digitalmotionprocessor();
- // delay(10000);
+  digitalmotionprocessor();s
   directionControl();
   printData();
 }
 
-/* ------------------------------ setupMPU ---------------------------------- */
+/******************************************************************
+* setupMPU
+******************************************************************/
 void setupMPU(){
 
+// count time
   currTime = millis();
   loopTime = currTime - prevTime;
   prevTime = currTime;
 
+// map accelerations
   accX = map(accX, -17000, 17000, -1500, 1500);
   accY = map(accY, -17000, 17000, -1500, 1500);
   accZ = map(accZ, -17000, 17000, -1500, 1500);
 }
 
-/* -------------------------- recordAcceGyrolRegisters -------------------------- */
+/******************************************************************
+* recordAcceGyrolRegisters
+******************************************************************/
 void recordAccelGryoRegisters() {
     // Calculate Angle of Inclination
 /* atan2(y,z) function gives the angle in radians between the positive z-axis of a plane
@@ -233,7 +232,9 @@ angles (left half-plane, y < 0). */
 
 }
 
-/* -------------------------- complementaryFilter -------------------------- */
+/******************************************************************
+* complementaryFilter
+******************************************************************/
 void complementaryFilter() {
 /*We have two measurements of the angle from two different sources. The measurement from accelerometer gets
  * affected by sudden horizontal movements and the measurement from gyroscope gradually drifts away from actual value.
@@ -253,7 +254,11 @@ horizontal acceleration to pass through. */
   currentAngleZ = 0.98*(prevAngleZ + (gyroZ / 131)*dt) + 0.02*accAngleZ; // 0.98*(prevAngleZ + gyroAngleZ) + 0.02*(accAngleZ);
 }
 
-/* --------------------------   mpu.digitalmotionprocessor(): -------------------------- */
+/******************************************************************
+* digitalmotionprocessor
+******************************************************************/
+/* This method processes the data using the integrated DMP on the sensor, resulting in less processing done by the Arduino.
+It is more precise than using the complementary filter according to some sources. */
 
 void digitalmotionprocessor() {
     if (!dmpReady) return;
@@ -297,14 +302,12 @@ void digitalmotionprocessor() {
     mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
 }
 
-/* -------------------------- directionControl -------------------------- */
+/******************************************************************
+* directionControl
+******************************************************************/
 void directionControl() {
-  // Set motors to maximum speed
-  // For PWM maximum possible values are 0 to 255
-//    analogWrite(enA, 255);
-//    analogWrite(enB, 255);
 
-    /* ---------- Control X-direction ----------*/
+/* ---------- Control X-direction ----------*/
     if(accAngleX > 0){ //  accX
     if(accAngleX < 255){
       //Serial.println(accX);
@@ -340,7 +343,7 @@ void directionControl() {
     }
     }
 
-    /* ---------- Control Y-direction ----------*/
+/* ---------- Control Y-direction ----------*/
     if(accAngleY > 0){ //  accY
     if(accAngleY < 255){
       analogWrite(enB, 255);
@@ -377,8 +380,22 @@ void directionControl() {
     }
 }
 
-/* -------------------------- printData -------------------------- */
+/******************************************************************
+* printData
+******************************************************************/
 void printData() {        /* PRINT DATA */
+  /* Se muestran las lecturas obtenidas con métodos distintos para determinar cual es preferible usar.
+  Funcionan:    - ángulo de giro del acelerómetro
+                - datos de aceleración, en g (1g = 9.81)
+                - ángulo de giro obtenido usando el DMP integrado en el MPU6050
+  No funcionan: - ángulo de giro del giroscopio
+                  --> ángulo de giro con filtro High Pass y Low Pass */
+
+// Llamar subrutinas, seguramente innecesario
+  complementaryFilter();
+  digitalmotionprocessor();
+
+//raw data from accelerometer
 //  Serial.print(" acc (RAW): ");
 //  Serial.print (" X = ");
 //  Serial.print( accX);
@@ -387,9 +404,7 @@ void printData() {        /* PRINT DATA */
 //  Serial.print (" Z = ");
 //  Serial.print( accZ);
 
-  complementaryFilter();
-  digitalmotionprocessor();
-
+// Mostrar lectura ángulo de giro del acelerómetro // FUNCIONA BIEN pero tiene los problemas relacionados con el "drift"
   Serial.println (" ");
   Serial.print(" Angle, accel (deg): ");
   Serial.print (" X = ");
@@ -400,7 +415,7 @@ void printData() {        /* PRINT DATA */
   Serial.print( accAngleZ);
 
   Serial.println (" ");
-
+// Mostrar lectura ángulo de giro del giroscopio // NO FUNCIONA da como output solo 0s, idk
   Serial.print(" Angle, gyro (deg): ");
   Serial.print (" X = ");
   Serial.print( gyroAngleX);
@@ -412,6 +427,7 @@ void printData() {        /* PRINT DATA */
   Serial.println (" ");
   Serial.println (" ");
 
+// Mostrar lectura ángulo de giro filtrada usando void complementaryFilter // como depende del giroscopio la lectura no sale bien
   Serial.print(" Angle, filtered (deg): ");
   Serial.print (" X = ");
   Serial.print( currentAngleX);
@@ -422,6 +438,7 @@ void printData() {        /* PRINT DATA */
 
   Serial.println (" ");
 
+// Mostar lectura aceleración (datos del ácelerómetro)  // FUNCIONA BIEN
   Serial.print(" Accel (g): ");
   Serial.print(" X=");
   Serial.print(gForceX);
@@ -433,8 +450,9 @@ void printData() {        /* PRINT DATA */
   Serial.println (" ");
 
   Serial.println (" ---------------------------------------------------------- ");
+// Mostar los datos obtenidos usando el DMP integrado en el MPU6050 // TARDAN ENTRE 10-15s EN ESTABILIZARSE
 
-     // Mostrar Yaw, Pitch, Roll //  pitch y, roll x, yaw z
+// Mostrar Yaw, Pitch, Roll //  pitch y, roll x, yaw z // hay que confirmar que eje es que // SALE BIEN
     Serial.println (" ");
     Serial.print(" Angle, filtered (deg): ");
     // Serial.print (" ");
@@ -447,7 +465,7 @@ void printData() {        /* PRINT DATA */
 
     Serial.println (" ");
 
-//   // Mostrar aceleracion
+//   // Mostrar aceleracion // Puede que esté bien pero no se en qué unidades está
    Serial.print (" Acceleration:");
    //Serial.print("areal\t"); // Serial.print("areal\t");
    Serial.print(" X =");
