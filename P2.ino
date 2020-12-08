@@ -1,4 +1,5 @@
 #include <math.h>
+#include "SensorReading&Actuators.h"
 //
 
 /*********************** Network Configuration ************************/
@@ -28,11 +29,11 @@ float Rando;
 float Error;
 float Accum;
 
-
 float Hidden[HiddenNodes];
 float Output[OutputNodes];
 float MotorIn[OutputNodes];
 float SensorOut[InputNodes];
+float * statevector_ptr[InputNodes];
 float HiddenWeights[InputNodes+1][HiddenNodes];
 float OutputWeights[HiddenNodes+1][OutputNodes];
 float HiddenDelta[HiddenNodes];
@@ -64,6 +65,10 @@ void initialiseNN() {
   // Serial.println("Initial/Untrained Outputs: ");
 }
 
+/*********************** Hardware ************************/
+
+Sensor sensor();
+Actuator motor();
 
 /******************************************************************
 * Void Setup
@@ -84,18 +89,6 @@ void setup(){
 ******************************************************************/
 void loop (){
   NeuralNetwork();
-}
-
-
-/******************************************************************
-* Void readSensor
-******************************************************************/
-float readSensor() {
-  //...
-//  float SensorIn[9] = {angleX, angleY, angleZ, velX, velY, velZ, accX, accY, accZ}
-
-//  return SensorIn;
-
 }
 
 /******************************************************************
@@ -144,14 +137,14 @@ void NeuralNetwork() {
         Output[i] = 1.0/(1.0 + exp(-Accum)) ;         // Sigmoid activation function
 
         MotorIn[i] = Output[i] * 255;
+      }
 
-        // llamada a los motores para el output
-        // 
+      //motor.directionControl(MotorIn[]);
+      //SensorOut = sensor.readSensor();
 
+      for( i = 0 ; i < OutputNodes ; i++ ) {
         OutputDelta[i] = (Target[p][i] - SensorOut[i]) * Output[i] * (1.0 - Output[i]) ;  // error por derivada de función de activación
-
         // target es nuestro comando // SensorOut es lectura después de que se activen los motores
-
         Error += 0.5 * (Target[p][i] - SensorOut[i]) * (Target[p][i] - SensorOut[i]) ;
       }
 

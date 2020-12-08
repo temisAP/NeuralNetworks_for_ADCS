@@ -28,17 +28,12 @@ No funcionan: - ángulo de giro del giroscopio
                 --> ángulo de giro con filtro High Pass y Low Pass */
 
 /***********************  INCLUDE LIBRARIES ************************/
-#include<I2Cdev.h>
+#include <I2Cdev.h>
 #include <math.h>
 #include <MPU6050_6Axis_MotionApps20.h>               // esta libreria incluye las funciones para usar el DMP
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include <Wire.h>                                 // incluir la libreria incluida de Arduino Wire.h de manera que no interfiera con MPU6050_6Axis_MotionApps20.h
 #endif
-
-
-
-
-
 
 /******************************************************************
 * Classes
@@ -59,7 +54,7 @@ class Sensor{
   long accelX, accelY, accelZ;
 
   float gForceX, gForceY, gForceZ;
-  int16_t gyroX, gyroY, gyroZ, gyroRateX, gyroRateY, gyroRateZ, accX, accY, accZ;
+  int16_t accX, accY, accZ;
   float gyroAngleX, gyroAngleY, gyroAngleZ, accAngleX, accAngleY, accAngleZ; // double //gyroAngleX=0
   float currentAngleX, currentAngleY, currentAngleZ, prevAngleX=0, prevAngleY=0, prevAngleZ=0, error, prevError=0, errorSum=0; //
   unsigned long currTime, prevTime=0, loopTime;
@@ -88,11 +83,13 @@ class Sensor{
   /***********************  Define methods ************************/
 
   Sensor();
-  void readSensor();
+  float * readSensor();
 
 };
 
 class Actuator{
+
+  /***********************  Motor connections ************************/
   // Motor X connections
   const int enA = 9;
   const int in1 = 8;
@@ -105,6 +102,9 @@ class Actuator{
   const int enC = 3;
   const int in5 = 5;
   const int in6 = 4;
+  /***********************  Motor Methods ************************/
+  Actuator();
+  directionControl();
 
 };
 
@@ -147,14 +147,6 @@ Sensor::Sensor(){
  // Iniciar DMP
  Serial.println(F("Initializing DMP..."));
  devStatus = mpu.dmpInitialize();
-
- // Valores de calibracion
- mpu.setXGyroOffset(24);
- mpu.setYGyroOffset(-24);
- mpu.setZGyroOffset(5);
- mpu.setXAccelOffset(-2833);
- mpu.setYAccelOffset(-108);
- mpu.setZAccelOffset(1088);
 
  // Activar DMP
  if (devStatus == 0) {
@@ -302,7 +294,7 @@ void digitalmotionprocessor() {
 /******************************************************************
 * directionControl
 ******************************************************************/
-void directionControl() {
+void directionControl(float MotorIn[]) {
 
 /* ---------- Control X-direction ----------*/
     if(accAngleX > 0){ //  accX
@@ -380,7 +372,7 @@ void directionControl() {
 /******************************************************************
 * printData
 ******************************************************************/
-void printData() {        /* PRINT DATA */
+void printData() {/* PRINT DATA */
   /* Se muestran las lecturas obtenidas con métodos distintos para determinar cual es preferible usar.
   Funcionan:    - ángulo de giro del acelerómetro
                 - datos de aceleración, en g (1g = 9.81)
@@ -484,13 +476,15 @@ void printData() {        /* PRINT DATA */
 /******************************************************************
 * Void Loop
 ******************************************************************/
-void loop() {
+float * readSensor() {
   setupMPU();
   mpu.getAcceleration(&accX, &accY, &accZ);
   mpu.getRotation(&gyroX, &gyroY, &gyroZ);
   recordAccelGryoRegisters();
-  complementaryFilter();
-  digitalmotionprocessor();s
-  directionControl();
+  digitalmotionprocessor();
   printData();
+
+  float statevector[9] = {gyroX, gyroY, gyroZ, velX, velY, velZ, accX, accY, accZ}
+
+  return statevector;
 }
