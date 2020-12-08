@@ -73,14 +73,20 @@ volatile bool mpuInterrupt = false;
 //DMP connection (Sensor) // El MPU6050 se conecta al pin 2 (digital) del Arduino para activar la funcionalidad del DMP
 #define INTERRUPT_PIN 2
 
-// Motor A connections
+// Motor X connections
 #define enA 9
 #define in1 8
 #define in2 7
-// Motor B connections
+// Motor Y connections
 #define enB 3
 #define in3 5
 #define in4 4
+// Motor Z connections
+#define enC 3
+#define in5 5
+#define in6 4
+
+/*********************** Classes ***********************/
 
 void dmpDataReady() {
     mpuInterrupt = true;
@@ -113,25 +119,32 @@ void setup() {
   Wire.begin();
 
   // Set all the motor control pins to outputs
-  pinMode(enA, OUTPUT);   // MOTOR 1
-  pinMode(enB, OUTPUT);   // MOTOR 2
-  pinMode(in1, OUTPUT);   // MOTOR 1
-  pinMode(in2, OUTPUT);   // MOTOR 1
-  pinMode(in3, OUTPUT);   // MOTOR 2
-  pinMode(in4, OUTPUT);   // MOTOR 2
+  pinMode(enA, OUTPUT);   // MOTOR X
+  pinMode(in1, OUTPUT);   // MOTOR X
+  pinMode(in2, OUTPUT);   // MOTOR X
+
+  pinMode(enB, OUTPUT);   // MOTOR Y
+  pinMode(in3, OUTPUT);   // MOTOR Y
+  pinMode(in4, OUTPUT);   // MOTOR Y
+
+  pinMode(enC, OUTPUT);   // MOTOR Z
+  pinMode(in5, OUTPUT);   // MOTOR Z
+  pinMode(in6, OUTPUT);   // MOTOR Z
 
   // Turn off motors - Initial state
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
   digitalWrite(in3, LOW);
   digitalWrite(in4, LOW);
+  digitalWrite(in5, LOW);
+  digitalWrite(in6, LOW);
 
    // Iniciar MPU6050
   Serial.println(F("Initializing I2C devices..."));
   mpu.initialize();
   pinMode(INTERRUPT_PIN, INPUT);
 
-  // Comprobar  conexion
+  // Comprobar conexion
   Serial.println(F("Testing device connections..."));
   Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 
