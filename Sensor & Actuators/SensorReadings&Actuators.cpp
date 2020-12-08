@@ -22,7 +22,7 @@
 /* NOTE!!!!!!!!!!
 Se muestran las lecturas obtenidas con varios métodos para determinar cual es preferible usar. Los que no se usen se podrán borrar.
 Funcionan:    - ángulo de giro del acelerómetro
-              - datos de aceleración, en g (1g = 9.81)
+              - datos de aceleración, en g (1g = 9.81 m/s^2)
               - ángulo de giro obtenido usando el DMP integrado en el MPU6050
 No funcionan: - ángulo de giro del giroscopio
                 --> ángulo de giro con filtro High Pass y Low Pass */
