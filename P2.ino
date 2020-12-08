@@ -146,7 +146,7 @@ void NeuralNetwork() {
         MotorIn[i] = Output[i] * 255;
 
         // llamada a los motores para el output
-
+        // 
 
         OutputDelta[i] = (Target[p][i] - SensorOut[i]) * Output[i] * (1.0 - Output[i]) ;  // error por derivada de función de activación
 
