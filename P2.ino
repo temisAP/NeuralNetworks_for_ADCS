@@ -1,5 +1,5 @@
 #include <math.h>
-#include "SensorReading&Actuators.h"
+#include <SensorReadingActuators.h>
 //
 
 /*********************** Network Configuration ************************/
