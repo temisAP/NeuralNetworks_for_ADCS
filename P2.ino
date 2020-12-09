@@ -6,8 +6,9 @@
 
 const int PatternCount = 1;
 const int InputNodes = 9;   // giros (x,y,z), velocidades (x,y,z), aceleraciones (x,y,z)
-const int HiddenNodes = 9;  // número de nodos ocultos (solo hay una capa)
+const int HiddnNodes = 9;  // número de nodos ocultos (solo hay una capa)
 const int OutputNodes = 3; // motor x, motor y, motor z
+const int Targetsize = 9;
 const float LearningRate = 0.3;
 const float Momentum = 0.9;
 const float InitialWeightMax = 0.5;
@@ -15,8 +16,8 @@ const float Success = 0.0004;
 
 float Input[PatternCount][InputNodes];
 
-float Target[PatternCount][OutputNodes] = {
-  { 0, 0, 0 }
+float Target[PatternCount][Targetsize] = {
+  {0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
 /*********************** End Network Configuration ************************/
@@ -24,7 +25,7 @@ float Target[PatternCount][OutputNodes] = {
 int i, j, p, q, r;
 int ReportEvery1000;
 int RandomizedIndex[PatternCount];
-long  TrainingCycle;
+long TrainingCycle;
 float Rando;
 float Error;
 float Accum;
@@ -32,8 +33,7 @@ float Accum;
 float Hidden[HiddenNodes];
 float Output[OutputNodes];
 float MotorIn[OutputNodes];
-float SensorOut[InputNodes];
-float * statevector_ptr[InputNodes];
+float * statevector_ptr[Targetsize]; //This is SensorOut
 float HiddenWeights[InputNodes+1][HiddenNodes];
 float OutputWeights[HiddenNodes+1][OutputNodes];
 float HiddenDelta[HiddenNodes];
@@ -96,6 +96,7 @@ void loop (){
 ******************************************************************/
 void NeuralNetwork() {
 
+
 /*********************** Begin training ************************/
 
   for( TrainingCycle = 1 ; TrainingCycle < 2147483647 ; TrainingCycle++) {    // como un while
@@ -116,6 +117,12 @@ void NeuralNetwork() {
 
     for( q = 0 ; q < PatternCount ; q++ ) {
       p = RandomizedIndex[q];
+
+/********** Read sensor outputs *****************/
+
+      statevector_ptr = &sensor.readSensor();
+
+      Input[p][] = *statevector_ptr[];
 
 /********** Compute hidden layer activations *****************/
 
@@ -142,7 +149,7 @@ void NeuralNetwork() {
       //motor.directionControl(MotorIn[]);
       //SensorOut = sensor.readSensor();
 
-      for( i = 0 ; i < OutputNodes ; i++ ) {
+      for( i = 0 ; i < Targetsize; i++ ) {
         OutputDelta[i] = (Target[p][i] - SensorOut[i]) * Output[i] * (1.0 - Output[i]) ;  // error por derivada de función de activación
         // target es nuestro comando // SensorOut es lectura después de que se activen los motores
         Error += 0.5 * (Target[p][i] - SensorOut[i]) * (Target[p][i] - SensorOut[i]) ;
