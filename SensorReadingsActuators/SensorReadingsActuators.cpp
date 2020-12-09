@@ -34,6 +34,8 @@ No funcionan: - ángulo de giro del giroscopio
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include <Wire.h>                                 // incluir la libreria incluida de Arduino Wire.h de manera que no interfiera con MPU6050_6Axis_MotionApps20.h
 #endif
+#include <SensorReadingsActuators.h>
+#include "Arduino.h"
 
 /******************************************************************
 * Classes
@@ -51,12 +53,23 @@ class Sensor{
   //MPU6050 mpu(mpuAddress);
   MPU6050 mpu;
 
+  //accelerations
   long accelX, accelY, accelZ;
 
   float gForceX, gForceY, gForceZ;
   int16_t accX, accY, accZ;
-  float gyroAngleX, gyroAngleY, gyroAngleZ, accAngleX, accAngleY, accAngleZ; // double //gyroAngleX=0
+
+  float accAngleX, accAngleY, accAngleZ;
+
+  //angular velocity
+  float velX, velY, velZ; // double //gyroAngleX=0
+  float currentVelX, currentVelY, currentVelZ, prevVelX=0, prevVelY=0, prevVelZ=0, error, prevError=0, errorSum=0; //
+
+  //angle
+  float gyroAngleX, gyroAngleY, gyroAngleZ; // double //gyroAngleX=0
   float currentAngleX, currentAngleY, currentAngleZ, prevAngleX=0, prevAngleY=0, prevAngleZ=0, error, prevError=0, errorSum=0; //
+
+  //time
   unsigned long currTime, prevTime=0, loopTime;
   float dt;
 
@@ -83,7 +96,7 @@ class Sensor{
   /***********************  Define methods ************************/
 
   Sensor();
-  float * readSensor();
+  float *readSensor();
 
 };
 
@@ -474,17 +487,28 @@ void printData() {/* PRINT DATA */
 }
 
 /******************************************************************
-* Void Loop
+* readSensor
 ******************************************************************/
-float * readSensor() {
+float *readSensor() {
   setupMPU();
-  mpu.getAcceleration(&accX, &accY, &accZ);
-  mpu.getRotation(&gyroX, &gyroY, &gyroZ);
+  mpu.getAcceleration(&accX, &accY, &accZ); //Acceleration from MPU
+  //mpu.getRotation(&gyroX, &gyroY, &gyroZ);
+  dmp.dmpGetYawPitchRoll(&) //Gyro from DMP
   recordAccelGryoRegisters();
   digitalmotionprocessor();
-  printData();
+  //printData();
 
-  float statevector[9] = {gyroX, gyroY, gyroZ, velX, velY, velZ, accX, accY, accZ}
+  gyroX = 0;
+  gyroY = 0;
+  gyroZ = 0;
+  velX = 0;
+  velY = 0;
+  velZ = 0;
+  accX = 0;
+  accY = 0;
+  accz = 0;
+
+  float (*statevector)[9] = {gyroX, gyroY, gyroZ, velX, velY, velZ, accX, accY, accZ};
 
   return statevector;
 }
