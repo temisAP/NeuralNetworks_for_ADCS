@@ -1,4 +1,4 @@
-# NeuralNetworks_for_ADCS
+### NeuralNetworks_for_ADCS ###
 Arduino Neural Network for Attitude Determination and Control Systems
 
 This repository consists in one main code (P2.ino) and one library (SensorReadingsActuators) which must be included in the library directory of Arduino. Also two more libraries must be included in order to get the gyroscope (MPU-6050) outputs: I2Cdev and MPU-6050
