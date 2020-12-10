@@ -132,14 +132,14 @@ Actuator::Actuator() {
 *  dmpDataRead
 ******************************************************************/
 
-void dmpDataReady() {
+void Sensor::dmpDataReady() {
     mpuInterrupt = true;
 }
 
 /******************************************************************
 * setupMPU
 ******************************************************************/
-void setupMPU(){
+void Sensor::setupMPU(){
 
 // count time
   currTime = millis();
@@ -155,7 +155,7 @@ void setupMPU(){
 /******************************************************************
 * recordAcceGyrolRegisters
 ******************************************************************/
-void recordAccelGryoRegisters() {
+void Sensor::recordAccelGryoRegisters() {
     // Calculate Angle of Inclination
 /* atan2(y,z) function gives the angle in radians between the positive z-axis of a plane
 and the point given by the coordinates (z,y) on that plane, with positive sign for
@@ -178,7 +178,7 @@ angles (left half-plane, y < 0). */
 /* This method processes the data using the integrated DMP on the sensor, resulting in less processing done by the Arduino.
 It is more precise than using the complementary filter according to some sources. */
 
-void digitalmotionprocessor() {
+void Sensor::digitalmotionprocessor() {
     if (!dmpReady) return;
 
     // Ejecutar mientras no hay interrupcion
@@ -223,7 +223,7 @@ void digitalmotionprocessor() {
 /******************************************************************
 * directionControl
 ******************************************************************/
-void directionControl(float MotorIn[]) {
+void Motor::directionControl(float MotorIn[]) {
 
 /* ---------- Control X-direction ----------*/
     if(accAngleX > 0){ //  accX
@@ -301,7 +301,7 @@ void directionControl(float MotorIn[]) {
 /******************************************************************
 * printData
 ******************************************************************/
-void printData() {/* PRINT DATA */
+void Sensor::printData() {/* PRINT DATA */
   /* Se muestran las lecturas obtenidas con métodos distintos para determinar cual es preferible usar.
   Funcionan:    - ángulo de giro del acelerómetro
                 - datos de aceleración, en g (1g = 9.81)
@@ -405,7 +405,7 @@ void printData() {/* PRINT DATA */
 /******************************************************************
 * readSensor
 ******************************************************************/
-void readSensor() {
+void Sensor::readSensor() {
   setupMPU();
   mpu.getAcceleration(&accX, &accY, &accZ); //Acceleration from MPU
   //mpu.getRotation(&gyroX, &gyroY, &gyroZ);
