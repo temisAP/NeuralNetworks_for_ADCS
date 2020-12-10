@@ -15,6 +15,13 @@
 #ifndef SensorReadingsActuators_h
 #define SensorReadingsActuators_h
 
+
+#include <I2Cdev.h>
+#include <math.h>
+#include <MPU6050_6Axis_MotionApps20.h>               // esta libreria incluye las funciones para usar el DMP
+#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+    #include <Wire.h>                                 // incluir la libreria incluida de Arduino Wire.h de manera que no interfiera con MPU6050_6Axis_MotionApps20.h
+#endif
 #include "Arduino.h"
 
 /******************************************************************
@@ -43,7 +50,7 @@ class Sensor{
 
   //angular velocity
   float velX, velY, velZ; // double //gyroAngleX=0
-  float currentVelX, currentVelY, currentVelZ, prevVelX=0, prevVelY=0, prevVelZ=0, error, prevError=0, errorSum=0; //
+  float currentVelX, currentVelY, currentVelZ, prevVelX=0, prevVelY=0, prevVelZ=0, errorVel, prevErrorVel=0, errorSumVel=0; //
 
   //angle
   float gyroAngleX, gyroAngleY, gyroAngleZ; // double //gyroAngleX=0
@@ -78,7 +85,6 @@ class Sensor{
   const float sampleTime = 0.005;
 
   /***********************  Define methods ************************/
-
   Sensor();
   /******************************************************************
   *  dmpDataRead
@@ -97,7 +103,6 @@ class Sensor{
   ******************************************************************/
   /* This method processes the data using the integrated DMP on the sensor, resulting in less processing done by the Arduino.
   It is more precise than using the complementary filter according to some sources. */
-
   void digitalmotionprocessor();
   /******************************************************************
   * printData
@@ -107,12 +112,11 @@ class Sensor{
   * readSensor
   ******************************************************************/
   void readSensor();
-
-
 };
 
 class Actuator{
 
+public:
   /***********************  Motor connections ************************/
   // Motor X connections
   const int enA = 9;
@@ -123,18 +127,16 @@ class Actuator{
   const int in3 = 5;
   const int in4 = 4;
   // Motor Z connections
-  const int enC = 3;
-  const int in5 = 5;
-  const int in6 = 4;
+  const int enC = 10;
+  const int in5 = 11;
+  const int in6 = 12;
   /***********************  Motor Methods ************************/
   Actuator();
-
   /******************************************************************
   * directionControl
   ******************************************************************/
   void directionControl(float);
 
 };
-
 
 #endif

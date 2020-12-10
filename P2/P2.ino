@@ -1,6 +1,5 @@
 #include <math.h>
 #include <SensorReadingsActuators.h>
-#include <SensorReadingsActuators.cpp>
 //
 
 /*********************** Network Configuration ************************/
@@ -122,8 +121,9 @@ void NeuralNetwork() {
 
       gyroscope.readSensor();
 
-      Input[p][] = &gyroscope.statevector[];
-
+      for( i = 0 ; i < InputNodes ; i++ ) {
+        Input[p][i] = gyroscope.statevector[i];
+      }
 /********** Compute hidden layer activations *****************/
 
       for( i = 0 ; i < HiddenNodes ; i++ ) {
@@ -143,10 +143,10 @@ void NeuralNetwork() {
         }
         Output[i] = 1.0/(1.0 + exp(-Accum)) ;         // Sigmoid activation function
 
-        MotorIn[i] = Output[i] * 255;
+        MotorIn[i] = (Output[i]-0.5) * 2 * 255;
       }
 
-      motor.directionControl(MotorIn[]); //Llamada a los motores con la salida de la NN
+      motor.directionControl(float MotorIn[]); //Llamada a los motores con la salida de la NN
       gyroscope.readSensor(); //Actualización del vector de estado
 
       for( i = 0 ; i < Targetsize; i++ ) {

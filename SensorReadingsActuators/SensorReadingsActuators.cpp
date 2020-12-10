@@ -225,77 +225,59 @@ void Sensor::digitalmotionprocessor() {
 ******************************************************************/
 void Motor::directionControl(float MotorIn[]) {
 
-/* ---------- Control X-direction ----------*/
-    if(accAngleX > 0){ //  accX
-    if(accAngleX < 255){
-      //Serial.println(accX);
-      analogWrite(in2,accAngleX);
-      analogWrite(enA, 255);
-      digitalWrite(in1, HIGH);
-      digitalWrite(in2, LOW);
-      //delay(2000);
-    }
-    else{
-      //Serial.println("+255");
-      analogWrite(in2,255);
-      analogWrite(enA, 0);
-      digitalWrite(in1, LOW);
-      digitalWrite(in2, LOW);
-    }
+  //Value between -255 and 255
+  Vx = MotorIn[0]; //in1 in2 enA
+  Vy = MotorIn[1]; //in3 in4 enB
+  Vz = MotorIn[2]; //in5 in6 enC
 
-    }
-    if(accAngleX < 0){
-    if(accAngleX > -255){
-      //Serial.println(accX);
-      analogWrite(in1, accAngleX-accAngleX-accAngleX);
-      analogWrite(enA, 255);
-      digitalWrite(in1, LOW);
-      digitalWrite(in2, HIGH);
-    }
-    else{
-      analogWrite(enA, 0);
-      //Serial.println("-255");
-      analogWrite(in1, 255);
-      digitalWrite(in1, LOW);
-      digitalWrite(in2, LOW);
-    }
-    }
+  /* ---------- Control X-direction ----------*/
+  if (Vx > 0){
+    analogWrite(enA, abs(Vx));
+    digitalWrite(in1, HIGH);
+    digitalWrite(in2, LOW);
+  }
+  else if(Vx < 0){
+    analogWrite(enA, abs(Vx));
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, HIGH);
+  }
+  else if(Vx == 0){
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, LOW);
+  }
 
-/* ---------- Control Y-direction ----------*/
-    if(accAngleY > 0){ //  accY
-    if(accAngleY < 255){
-      analogWrite(enB, 255);
-      //Serial.println(accY);
-      analogWrite(in4,accAngleY);
-      digitalWrite(in3, HIGH);
-      digitalWrite(in4, LOW);
-      //delay(2000);
-      }
-    else{
-      analogWrite(enB, 0);
-      //Serial.println("+255");
-      analogWrite(in4,255);
-      digitalWrite(in3, LOW);
-      digitalWrite(in4, LOW);
-    }
+  /* ---------- Control Y-direction ----------*/
+  if (Vy > 0){
+    analogWrite(enB, abs(Vy));
+    digitalWrite(in3, HIGH);
+    digitalWrite(in4, LOW);
+  }
+  else if(Vy < 0){
+    analogWrite(enB, abs(Vy));
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, HIGH);
+  }
+  else if(Vy == 0){
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, LOW);
+  }
 
-    }
-    if(accAngleY < 0){
-    if(accAngleY > -255){
-      analogWrite(enB, 255);
-      //Serial.println(accY);
-      analogWrite(in3, accAngleY-accAngleY-accAngleY);
-      digitalWrite(in3, LOW);
-      digitalWrite(in4, HIGH);
-    }
-    else{
-      analogWrite(enB, 255);
-      //Serial.println("-255");
-      analogWrite(in3, 255);
-      digitalWrite(in3, LOW);
-      digitalWrite(in4, LOW);
-    }
-    }
+  /* ---------- Control Z-direction ----------*/
+  if (Vz > 0){
+    analogWrite(enC, abs(Vz));
+    digitalWrite(in5, HIGH);
+    digitalWrite(in6, LOW);
+  }
+  else if(Vz < 0){
+    analogWrite(enC, abs(Vz));
+    digitalWrite(in5, LOW);
+    digitalWrite(in6, HIGH);
+  }
+  else if(Vz == 0){
+    digitalWrite(in5, LOW);
+    digitalWrite(in6, LOW);
+  }
+
 }
 
 /******************************************************************
