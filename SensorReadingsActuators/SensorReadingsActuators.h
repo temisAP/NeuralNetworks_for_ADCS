@@ -46,7 +46,7 @@ class Sensor{
   float gForceX, gForceY, gForceZ;
   int16_t accX, accY, accZ;
 
-  float accAngleX, accAngleY, accAngleZ;
+  //float accAngleX, accAngleY, accAngleZ;
 
   //angular velocity
   float velX, velY, velZ; // double //gyroAngleX=0
@@ -130,12 +130,15 @@ public:
   const int enC = 10;
   const int in5 = 11;
   const int in6 = 12;
+
+  float MotorIn[3]; //Vx, Vy, Vz
+
   /***********************  Motor Methods ************************/
   Actuator();
   /******************************************************************
   * directionControl
   ******************************************************************/
-  void directionControl(float);
+  void directionControl();
 
 };
 

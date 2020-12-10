@@ -161,9 +161,9 @@ void Sensor::recordAccelGryoRegisters() {
 and the point given by the coordinates (z,y) on that plane, with positive sign for
 counter-clockwise angles (right half-plane, y > 0), and negative sign for clockwise
 angles (left half-plane, y < 0). */
-  accAngleX = atan(accY / sqrt(pow(accX, 2) + pow(accZ, 2)))*RAD_TO_DEG; //accAngleX = atan2(accX, accZ)*RAD_TO_DEG;  //  accAngleX = atan2(accY, accZ)*RAD_TO_DEG;
-  accAngleY = atan(-accX / sqrt(pow(accY, 2) + pow(accZ, 2)))*RAD_TO_DEG; //accAngleY = atan2(accY, accZ)*RAD_TO_DEG; //   accAngleX = atan2(accY, accZ)*RAD_TO_DEG;
-  accAngleZ = atan2(accY, accX)*RAD_TO_DEG; // atan(accY / sqrt(pow(accZ, 2) + pow(accX, 2)))*RAD_TO_DEG; // //  accAngleX = atan2(accY, accZ)*RAD_TO_DEG;
+  //accAngleX = atan(accY / sqrt(pow(accX, 2) + pow(accZ, 2)))*RAD_TO_DEG; //accAngleX = atan2(accX, accZ)*RAD_TO_DEG;  //  accAngleX = atan2(accY, accZ)*RAD_TO_DEG;
+  //accAngleY = atan(-accX / sqrt(pow(accY, 2) + pow(accZ, 2)))*RAD_TO_DEG; //accAngleY = atan2(accY, accZ)*RAD_TO_DEG; //   accAngleX = atan2(accY, accZ)*RAD_TO_DEG;
+  //accAngleZ = atan2(accY, accX)*RAD_TO_DEG; // atan(accY / sqrt(pow(accZ, 2) + pow(accX, 2)))*RAD_TO_DEG; // //  accAngleX = atan2(accY, accZ)*RAD_TO_DEG;
 
   // Calculate Acceleration
   gForceX = accX / 16388.0;  // 16388 is the value that the accel would show when subject to 1g acceleration
@@ -214,21 +214,22 @@ void Sensor::digitalmotionprocessor() {
     mpu.dmpGetGravity(&gravity, &q);
     mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
     // Mostrar aceleracion
-    mpu.dmpGetQuaternion(&q, fifoBuffer);
-    mpu.dmpGetAccel(&aa, fifoBuffer);
-    mpu.dmpGetGravity(&gravity, &q);
-    mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
+    //mpu.dmpGetQuaternion(&q, fifoBuffer);
+    //mpu.dmpGetAccel(&aa, fifoBuffer);
+    //mpu.dmpGetGravity(&gravity, &q);
+    //mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
 }
 
 /******************************************************************
 * directionControl
 ******************************************************************/
-void Motor::directionControl(float MotorIn[]) {
+void Actuator::directionControl() {
+
 
   //Value between -255 and 255
-  Vx = MotorIn[0]; //in1 in2 enA
-  Vy = MotorIn[1]; //in3 in4 enB
-  Vz = MotorIn[2]; //in5 in6 enC
+  float Vx = MotorIn[0]; //in1 in2 enA
+  float Vy = MotorIn[1]; //in3 in4 enB
+  float Vz = MotorIn[2]; //in5 in6 enC
 
   /* ---------- Control X-direction ----------*/
   if (Vx > 0){
@@ -281,131 +282,33 @@ void Motor::directionControl(float MotorIn[]) {
 }
 
 /******************************************************************
-* printData
-******************************************************************/
-void Sensor::printData() {/* PRINT DATA */
-  /* Se muestran las lecturas obtenidas con métodos distintos para determinar cual es preferible usar.
-  Funcionan:    - ángulo de giro del acelerómetro
-                - datos de aceleración, en g (1g = 9.81)
-                - ángulo de giro obtenido usando el DMP integrado en el MPU6050
-  No funcionan: - ángulo de giro del giroscopio
-                  --> ángulo de giro con filtro High Pass y Low Pass */
-
-// Llamar subrutinas, seguramente innecesario
-  complementaryFilter();
-  digitalmotionprocessor();
-
-//raw data from accelerometer
-//  Serial.print(" acc (RAW): ");
-//  Serial.print (" X = ");
-//  Serial.print( accX);
-//  Serial.print (" Y = ");
-//  Serial.print( accY);
-//  Serial.print (" Z = ");
-//  Serial.print( accZ);
-
-// Mostrar lectura ángulo de giro del acelerómetro // FUNCIONA BIEN pero tiene los problemas relacionados con el "drift"
-  Serial.println (" ");
-  Serial.print(" Angle, accel (deg): ");
-  Serial.print (" X = ");
-  Serial.print( accAngleX);
-  Serial.print (" Y = ");
-  Serial.print( accAngleY);
-  Serial.print (" Z = ");
-  Serial.print( accAngleZ);
-
-  Serial.println (" ");
-// Mostrar lectura ángulo de giro del giroscopio // NO FUNCIONA da como output solo 0s, idk
-  Serial.print(" Angle, gyro (deg): ");
-  Serial.print (" X = ");
-  Serial.print( gyroAngleX);
-  Serial.print (" Y = ");
-  Serial.print( gyroAngleY);
-  Serial.print (" Z = ");
-  Serial.print( gyroAngleZ);
-
-  Serial.println (" ");
-  Serial.println (" ");
-
-// Mostrar lectura ángulo de giro filtrada usando void complementaryFilter // como depende del giroscopio la lectura no sale bien
-  Serial.print(" Angle, filtered (deg): ");
-  Serial.print (" X = ");
-  Serial.print( currentAngleX);
-  Serial.print (" Y = ");
-  Serial.print( currentAngleY);
-  Serial.print (" Z = ");
-  Serial.print( currentAngleZ);
-
-  Serial.println (" ");
-
-// Mostar lectura aceleración (datos del ácelerómetro)  // FUNCIONA BIEN
-  Serial.print(" Accel (g): ");
-  Serial.print(" X=");
-  Serial.print(gForceX);
-  Serial.print(" Y=");
-  Serial.print(gForceY);
-  Serial.print(" Z=");
-  Serial.println(gForceZ);
-
-  Serial.println (" ");
-
-  Serial.println (" ---------------------------------------------------------- ");
-// Mostar los datos obtenidos usando el DMP integrado en el MPU6050 // TARDAN ENTRE 10-15s EN ESTABILIZARSE
-
-// Mostrar Yaw, Pitch, Roll //  pitch y, roll x, yaw z // hay que confirmar que eje es que // SALE BIEN
-    Serial.println (" ");
-    Serial.print(" Angle, filtered (deg): ");
-    // Serial.print (" ");
-    Serial.print(" X ="); // Serial.print("\t");
-    Serial.print(ypr[2] * 180/M_PI);
-    Serial.print(" Y ="); //Serial.print("\t");
-    Serial.print(ypr[1] * 180/M_PI);;
-    Serial.print(" Z ="); // Serial.print("ypr\t");
-    Serial.println(ypr[0] * 180/M_PI);
-
-    Serial.println (" ");
-
-//   // Mostrar aceleracion // Puede que esté bien pero no se en qué unidades está
-   Serial.print (" Acceleration:");
-   //Serial.print("areal\t"); // Serial.print("areal\t");
-   Serial.print(" X =");
-   Serial.print(aaReal.x);
-//   Serial.print("\t");
-   Serial.print(" Y =");
-   Serial.print(aaReal.y);
-//   Serial.print("\t");
-   Serial.print(" Z =");
-   Serial.print(aaReal.z);
-
-   Serial.println (" ");
-
-   Serial.println("**************************************************************");
-
-   delay(100);
-}
-
-/******************************************************************
 * readSensor
 ******************************************************************/
 void Sensor::readSensor() {
   setupMPU();
   mpu.getAcceleration(&accX, &accY, &accZ); //Acceleration from MPU
-  //mpu.getRotation(&gyroX, &gyroY, &gyroZ);
-  dmp.dmpGetYawPitchRoll(); //Gyro from DMP
+  //dmp.dmpGetYawPitchRoll(); //Gyro from DMP
   recordAccelGryoRegisters();
   digitalmotionprocessor();
-  //printData();
 
-  gyroX = 0;
-  gyroY = 0;
-  gyroZ = 0;
-  velX = 0;
-  velY = 0;
-  velZ = 0;
-  accX = 0;
-  accY = 0;
-  accz = 0;
+  float gX = 0;
+  float gY = 0;
+  float gZ = 0;
+  float vX = 0;
+  float vY = 0;
+  float vZ = 0;
+  float aX = gForceX;
+  float aY = gForceY;
+  float aZ = gForceZ;
 
-  statevector[9] = {gyroX, gyroY, gyroZ, velX, velY, velZ, accX, accY, accZ};
+  statevector[0] = gX;
+  statevector[1] = gY;
+  statevector[2] = gZ;
+  statevector[3] = vX;
+  statevector[4] = vY;
+  statevector[5] = vZ;
+  statevector[6] = aX;
+  statevector[7] = aY;
+  statevector[8] = aZ;
 
 }

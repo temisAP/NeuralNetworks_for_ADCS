@@ -68,8 +68,6 @@ void initialiseNN() {
 Sensor gyroscope;
 Actuator motor;
 
-float MotorIn[OutputNodes];
-
 /******************************************************************
 * Void Setup
 ******************************************************************/
@@ -143,10 +141,10 @@ void NeuralNetwork() {
         }
         Output[i] = 1.0/(1.0 + exp(-Accum)) ;         // Sigmoid activation function
 
-        MotorIn[i] = (Output[i]-0.5) * 2 * 255;
+        motor.MotorIn[i] = (Output[i]-0.5) * 2 * 255;
       }
 
-      motor.directionControl(float MotorIn[]); //Llamada a los motores con la salida de la NN
+      motor.directionControl(); //Llamada a los motores con la salida de la NN
       gyroscope.readSensor(); //Actualización del vector de estado
 
       for( i = 0 ; i < Targetsize; i++ ) {
