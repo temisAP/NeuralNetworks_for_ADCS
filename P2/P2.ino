@@ -7,7 +7,7 @@
 
 const int PatternCount = 1;
 const int InputNodes = 9;   // giros (x,y,z), velocidades (x,y,z), aceleraciones (x,y,z)
-const int HiddenNodes = 9;  // número de nodos ocultos (solo hay una capa)
+const int HiddenNodes = 18;  // número de nodos ocultos (solo hay una capa)
 const int OutputNodes = 3; // motor x, motor y, motor z
 const int Targetsize = 9;
 const float LearningRate = 0.3;
@@ -67,9 +67,8 @@ void initialiseNN() {
 /*********************** Hardware ************************/
 
 Sensor gyroscope;
-Actuator motor();
+Actuator motor;
 
-float (*statevector_ptr)[Targetsize]=&gyroscope.readSensor(); //This is SensorOut
 float MotorIn[OutputNodes];
 
 /******************************************************************
@@ -123,7 +122,7 @@ void NeuralNetwork() {
 
       gyroscope.readSensor();
 
-      Input[p][] = *statevector_ptr[];
+      Input[p][] = &gyroscope.statevector[];
 
 /********** Compute hidden layer activations *****************/
 
@@ -151,9 +150,9 @@ void NeuralNetwork() {
       gyroscope.readSensor(); //Actualización del vector de estado
 
       for( i = 0 ; i < Targetsize; i++ ) {
-        OutputDelta[i] = (Target[p][i] - *statevector_ptr[i]) * Output[i] * (1.0 - Output[i]) ;  // error por derivada de función de activación
+        OutputDelta[i] = (Target[p][i] - gyroscope.statevector[i]) * Output[i] * (1.0 - Output[i]) ;  // error por derivada de función de activación
         // target es nuestro comando // statevector_ptr el estado después de que se activen los motores
-        Error += 0.5 * (Target[p][i] - *statevector_ptr[i]) * (Target[p][i] - *statevector_ptr[i]) ;
+        Error += 0.5 * (Target[p][i] - gyroscope.statevector[i]) * (Target[p][i] - gyroscope.statevector[i]) ;
       }
 
 /********** Backpropagate errors to hidden layer *****************/
