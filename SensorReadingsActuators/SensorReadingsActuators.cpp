@@ -17,15 +17,18 @@
 - Arduino Wire library
 - I2Cdev.h --> https://github.com/jrowberg/i2cdevlib
 - MPU6050.h -->  https://github.com/jrowberg/i2cdevlib
- */
 
-/* NOTE!!!!!!!!!!
-Se muestran las lecturas obtenidas con varios métodos para determinar cual es preferible usar. Los que no se usen se podrán borrar.
-Funcionan:    - ángulo de giro del acelerómetro
-              - datos de aceleración, en g (1g = 9.81 m/s^2)
-              - ángulo de giro obtenido usando el DMP integrado en el MPU6050
-No funcionan: - ángulo de giro del giroscopio
-                --> ángulo de giro con filtro High Pass y Low Pass */
+/* COMMENT:
+You have to edit the "MPU6050_6Axis_MotionApps20.h" file,
+go to line:272-274 and you"ll find
+
+ #ifndef MPU6050_DMP_FIFO_RATE_DIVISOR
+ #define MPU6050_DMP_FIFO_RATE_DIVISOR 0x01
+ #endif
+
+edit the 0x01 to 0x02 or 0x03. It will slow down the readings thus decreasing stress on your MCU.
+*/
+ */
 
 /***********************  INCLUDE LIBRARIES ************************/
 #include <I2Cdev.h>
@@ -37,14 +40,15 @@ No funcionan: - ángulo de giro del giroscopio
 #include <SensorReadingsActuators.h>
 #include "Arduino.h"
 
-/******************************************************************
-* Constructors
-******************************************************************/
 
+/******************************************************************/
+/******************************************************************
+* CONSTRUCTORS
+******************************************************************/
+/******************************************************************/
 Sensor::Sensor(){
 
   mpu_setup()
-
 
 }
 
@@ -70,110 +74,98 @@ Actuator::Actuator() {
   digitalWrite(in4, LOW);
   digitalWrite(in5, LOW);
   digitalWrite(in6, LOW);
-
 }
 
-
 /******************************************************************
-* Sensor functions
+* SENSOR FUNCTIONS
 ******************************************************************/
 
 /******************************************************************
 * MPU6050 setup
 ******************************************************************/
 
-void mpu_setup()
-{
+void Sensor::mpu_setup() {
+  Wire.begin();
+  mpu.initialize();   // // The initialize( ) command sets the accelerometer to +/- 2g and the gyroscope to 250% per second by default. These are the most sensitive settings
 
-  mpu.initialize();   // // The initialize( ) command sets the accelerometer to +/- 2g and the gyroscope to 250% per second by default. These are the most sensitive settings.
+/***********************  OFFSETS ************************/
+  mpu.setXAccelOffset(-2842); // from calibration routine
+  mpu.setYAccelOffset(-21); // from calibration routine
+  mpu.setZAccelOffset(1088); // from calibration routine
 
-  // verify connection //  testConnection() will check that it can find the I2C device address associated with the IMU. This should be either 0x68 or 0x69.
-  Serial.println(F("Testing device connections..."));
-  Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
+  mpu.setXGyroOffset(25); // from calibration routine
+  mpu.setYGyroOffset(-24); // from calibration routine
+  mpu.setZGyroOffset(5); // from calibration routine
 
-  // load and configure the DMP
-  Serial.println(F("Initializing DMP..."));
+/***********************   load and configure the DMP *************************/
   devStatus = mpu.dmpInitialize();      //  The dmpInitialize( ) command loads the firmware and configures it. It also initializes the FIFO buffer that’s going to
                                         // hold the combined data readings coming from the gyroscope and accelerometer. Providing everything has gone well with the initialization the DMP is enabled.
 
-  // supply your own gyro offsets here, scaled for min sensitivity
-  //  From a physics perspective the offsets provide a translation from the Body Frame to the Inertial Frame. The Body Frame is the IMU mounted on the robot, whereas the Inertial Frame is the
-  // frame from which all angle and velocity calculations are done.
-  mpu.setXGyroOffset(220);
-  mpu.setYGyroOffset(76);
-  mpu.setZGyroOffset(-85);
-  mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
-
   // make sure it worked (returns 0 if so)
-  if (devStatus == 0) {
-    // turn on the DMP, now that it's ready
-    //Serial.println(F("Enabling DMP..."));
-    mpu.setDMPEnabled(true);
-}
-
-
-/******************************************************************
-* IMU::readFifoBuffer_
-******************************************************************/
-void IMU::readFifoBuffer_() {
-  // Clear the buffer so as we can get fresh values
-  // The sensor is running a lot faster than our sample period
-  mpu.resetFIFO();
-
-  // get current FIFO count
+      if (devStatus == 0) {  // turn on the DMP, now that it's ready
+      //Serial.println(F("Enabling DMP..."));
+      mpu.setDMPEnabled(true);
+      }
+  packetSize = mpu.dmpGetFIFOPacketSize();
   fifoCount = mpu.getFIFOCount();
 
-  // wait for correct available data length, should be a VERY short wait
-  while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
-
-  // read a packet from FIFO
-  mpu.getFIFOBytes(fifoBuffer, packetSize);
+  Serial.begin(115200);
 }
 
 /******************************************************************
 * readSensor
 ******************************************************************/
 void Sensor::readSensor() {
-  setupMPU();
-  mpu.getAcceleration(&accX, &accY, &accZ); //Acceleration from MPU
-  //dmp.dmpGetYawPitchRoll(); //Gyro from DMP
-  recordAccelGryoRegisters();
-  digitalmotionprocessor();
+    /***********************  Obtaining data (angleX, angleY, angleZ) ************************/
+  while (fifoCount < packetSize) {fifoCount = mpu.getFIFOCount();}
 
-  float gX = 0;
-  float gY = 0;
-  float gZ = 0;
-  float vX = 0;
-  float vY = 0;
-  float vZ = 0;
-  float aX = gForceX;
-  float aY = gForceY;
-  float aZ = gForceZ;
+  if (fifoCount == 1024) {
+      mpu.resetFIFO();
+      Serial.println(F("FIFO overflow!"));
+  }
+  else{
+    if (fifoCount % packetSize != 0) {mpu.resetFIFO();}
+      else{
+          while (fifoCount >= packetSize) {
+              mpu.getFIFOBytes(fifoBuffer,packetSize);
+              fifoCount -= packetSize;
+          }
 
-  statevector[0] = gX;
-  statevector[1] = gY;
-  statevector[2] = gZ;
-  statevector[3] = vX;
-  statevector[4] = vY;
-  statevector[5] = vZ;
-  statevector[6] = aX;
-  statevector[7] = aY;
-  statevector[8] = aZ;
+          mpu.dmpGetQuaternion(&q,fifoBuffer);
+          mpu.dmpGetGravity(&gravity,&q);
+          mpu.dmpGetYawPitchRoll(ypr,&q,&gravity);
+
+          float angleZ = ypr[0] * 180/M_PI;     // yaw z
+          float angleY = ypr[1] * 180/M_PI;     // pitch y
+          float angleX = ypr[2] * 180/M_PI;     // roll x
+        }
+    }
+  /***********************  Data for NN ************************/
+
+
+  float velX=0, velY=0, velZ=0;
+  float accX=0, accY=0, accZ=0;
+
+  statevector[0] = angleX;
+  statevector[1] = angleY;
+  statevector[2] = angleZ;
+  statevector[3] = velX;
+  statevector[4] = velY;
+  statevector[5] = velZ;
+  statevector[6] = accX;
+  statevector[7] = accY;
+  statevector[8] = accZ;
 
 }
 
-
-
-
 /******************************************************************
-* Actuator functions
+* ACTUATOR FUNCTIONS
 ******************************************************************/
 
 /******************************************************************
 * directionControl
 ******************************************************************/
 void Actuator::directionControl() {
-
 
   //Value between -255 and 255
   float Vx = MotorIn[0]; //in1 in2 enA

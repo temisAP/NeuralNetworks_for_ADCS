@@ -41,32 +41,20 @@ class Sensor{
   MPU6050 mpu;
 
   //accelerations
-  long accelX, accelY, accelZ;
+  float accX, accY, accZ;
 
-  float gForceX, gForceY, gForceZ;
-  int16_t accX, accY, accZ;
-
-  //float accAngleX, accAngleY, accAngleZ;
-
-  //angular velocity
-  float velX, velY, velZ; // double //gyroAngleX=0
-  float currentVelX, currentVelY, currentVelZ, prevVelX=0, prevVelY=0, prevVelZ=0, errorVel, prevErrorVel=0, errorSumVel=0; //
+  //velocities
+  float velX, velY, velZ;
 
   //angle
-  float gyroAngleX, gyroAngleY, gyroAngleZ; // double //gyroAngleX=0
-  float currentAngleX, currentAngleY, currentAngleZ, prevAngleX=0, prevAngleY=0, prevAngleZ=0, error, prevError=0, errorSum=0; //
+  float angleX, angleY, angleZ;
 
   //statevector
-
   float statevector[9];
 
-  //time
-  unsigned long currTime, prevTime=0, loopTime;
-  float dt;
+  //time -> tbd
 
-  // definir parámetros del DMP // no todos son necesarios
-  bool dmpReady = false;  // set true if DMP init was successful
-  uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
+  // definir parámetros del DMP
   uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
   uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
   uint16_t fifoCount;     // count of all bytes currently in FIFO
@@ -86,31 +74,8 @@ class Sensor{
 
   /***********************  Define methods ************************/
   Sensor();
-  /******************************************************************
-  *  dmpDataRead
-  ******************************************************************/
-  void dmpDataReady();
-  /******************************************************************
-  * setupMPU
-  ******************************************************************/
-  void setupMPU();
-  /******************************************************************
-  * recordAcceGyrolRegisters
-  ******************************************************************/
-  void recordAccelGryoRegisters();
-  /******************************************************************
-  * digitalmotionprocessor
-  ******************************************************************/
-  /* This method processes the data using the integrated DMP on the sensor, resulting in less processing done by the Arduino.
-  It is more precise than using the complementary filter according to some sources. */
-  void digitalmotionprocessor();
-  /******************************************************************
-  * printData
-  ******************************************************************/
-  void printData();
-  /******************************************************************
-  * readSensor
-  ******************************************************************/
+  void mpu_setup();
+  void readFifoBuffer_();
   void readSensor();
 };
 
