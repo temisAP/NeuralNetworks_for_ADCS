@@ -78,6 +78,10 @@ Actuator::Actuator() {
 * Sensor functions
 ******************************************************************/
 
+/******************************************************************
+* MPU6050 setup
+******************************************************************/
+
 void mpu_setup()
 {
 
@@ -107,11 +111,6 @@ void mpu_setup()
     mpu.setDMPEnabled(true);
 }
 
-
-volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
-void dmpDataReady() {
-    mpuInterrupt = true;
-}
 
 /******************************************************************
 * IMU::readFifoBuffer_
