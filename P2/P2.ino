@@ -63,11 +63,6 @@ void initialiseNN() {
   // Serial.println("Initial/Untrained Outputs: ");
 }
 
-/*********************** Hardware ************************/
-
-Sensor gyroscope;
-Actuator motor;
-
 /******************************************************************
 * Void Setup
 ******************************************************************/
@@ -78,7 +73,8 @@ void setup(){
   for( p = 0 ; p < PatternCount ; p++ ) {
     RandomizedIndex[p] = p ;
   }
-  //readSensor();
+
+  /*********************** Neural Network ************************/
   initialiseNN();
 }
 
@@ -86,6 +82,7 @@ void setup(){
 * Void Loop
 ******************************************************************/
 void loop (){
+  
   NeuralNetwork();
 }
 
@@ -93,6 +90,10 @@ void loop (){
 * NeuralNetwork()
 ******************************************************************/
 void NeuralNetwork() {
+
+      /*********************** Hardware ************************/
+  Sensor gyroscope;
+  Actuator motor;
 
 /*********************** Begin training ************************/
 

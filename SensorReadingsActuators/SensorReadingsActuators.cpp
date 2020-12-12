@@ -48,7 +48,7 @@ edit the 0x01 to 0x02 or 0x03. It will slow down the readings thus decreasing st
 /******************************************************************/
 Sensor::Sensor(){
 
-  mpu_setup()
+  mpu_setup();
 
 }
 
@@ -103,25 +103,24 @@ void Sensor::mpu_setup() {
 
   // make sure it worked (returns 0 if so)
       if (devStatus == 0) {  // turn on the DMP, now that it's ready
-      //Serial.println(F("Enabling DMP..."));
       mpu.setDMPEnabled(true);
       }
   packetSize = mpu.dmpGetFIFOPacketSize();
   fifoCount = mpu.getFIFOCount();
 
-  Serial.begin(115200);
 }
 
 /******************************************************************
 * readSensor
 ******************************************************************/
 void Sensor::readSensor() {
+
+  HardwareSerial Serial;
     /***********************  Obtaining data (angleX, angleY, angleZ) ************************/
   while (fifoCount < packetSize) {fifoCount = mpu.getFIFOCount();}
 
   if (fifoCount == 1024) {
       mpu.resetFIFO();
-      Serial.println(F("FIFO overflow!"));
   }
   else{
     if (fifoCount % packetSize != 0) {mpu.resetFIFO();}

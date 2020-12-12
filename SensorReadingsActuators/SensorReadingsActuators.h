@@ -31,15 +31,10 @@
 class Sensor{
 
   public:
-  /***********************  Define connections ************************/
-  //DMP connection (Sensor) // El MPU6050 se conecta al pin 2 (digital) del Arduino para activar la funcionalidad del DMP
-  const int INTERRUPT_PIN = 2;
-
   /***********************  Define parameters ************************/
   //const int mpuAddress = 0x68;  // Puede ser 0x68 o 0x69
   //MPU6050 mpu(mpuAddress);
   MPU6050 mpu;
-
   //accelerations
   float accX, accY, accZ;
 
@@ -75,8 +70,8 @@ class Sensor{
   /***********************  Define methods ************************/
   Sensor();
   void mpu_setup();
-  void readFifoBuffer_();
   void readSensor();
+
 };
 
 class Actuator{
