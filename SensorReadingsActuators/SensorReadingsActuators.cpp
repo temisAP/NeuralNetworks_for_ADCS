@@ -48,7 +48,29 @@ edit the 0x01 to 0x02 or 0x03. It will slow down the readings thus decreasing st
 /******************************************************************/
 Sensor::Sensor(){
 
-  mpu_setup();
+  Wire.begin();
+  mpu.initialize();   // // The initialize( ) command sets the accelerometer to +/- 2g and the gyroscope to 250% per second by default. These are the most sensitive settings
+
+/***********************  OFFSETS ************************/
+  mpu.setXAccelOffset(-2842); // from calibration routine
+  mpu.setYAccelOffset(-21); // from calibration routine
+  mpu.setZAccelOffset(1088); // from calibration routine
+
+  mpu.setXGyroOffset(25); // from calibration routine
+  mpu.setYGyroOffset(-24); // from calibration routine
+  mpu.setZGyroOffset(5); // from calibration routine
+
+/***********************   load and configure the DMP *************************/
+  devStatus = mpu.dmpInitialize();      //  The dmpInitialize( ) command loads the firmware and configures it. It also initializes the FIFO buffer that’s going to
+                                        // hold the combined data readings coming from the gyroscope and accelerometer. Providing everything has gone well with the initialization the DMP is enabled.
+
+  // make sure it worked (returns 0 if so)
+      if (devStatus == 0) {  // turn on the DMP, now that it's ready
+      mpu.setDMPEnabled(true);
+      }
+  packetSize = mpu.dmpGetFIFOPacketSize();
+  fifoCount = mpu.getFIFOCount();
+  
 
 }
 
@@ -79,36 +101,6 @@ Actuator::Actuator() {
 /******************************************************************
 * SENSOR FUNCTIONS
 ******************************************************************/
-
-/******************************************************************
-* MPU6050 setup
-******************************************************************/
-
-void Sensor::mpu_setup() {
-  Wire.begin();
-  mpu.initialize();   // // The initialize( ) command sets the accelerometer to +/- 2g and the gyroscope to 250% per second by default. These are the most sensitive settings
-
-/***********************  OFFSETS ************************/
-  mpu.setXAccelOffset(-2842); // from calibration routine
-  mpu.setYAccelOffset(-21); // from calibration routine
-  mpu.setZAccelOffset(1088); // from calibration routine
-
-  mpu.setXGyroOffset(25); // from calibration routine
-  mpu.setYGyroOffset(-24); // from calibration routine
-  mpu.setZGyroOffset(5); // from calibration routine
-
-/***********************   load and configure the DMP *************************/
-  devStatus = mpu.dmpInitialize();      //  The dmpInitialize( ) command loads the firmware and configures it. It also initializes the FIFO buffer that’s going to
-                                        // hold the combined data readings coming from the gyroscope and accelerometer. Providing everything has gone well with the initialization the DMP is enabled.
-
-  // make sure it worked (returns 0 if so)
-      if (devStatus == 0) {  // turn on the DMP, now that it's ready
-      mpu.setDMPEnabled(true);
-      }
-  packetSize = mpu.dmpGetFIFOPacketSize();
-  fifoCount = mpu.getFIFOCount();
-
-}
 
 /******************************************************************
 * readSensor
