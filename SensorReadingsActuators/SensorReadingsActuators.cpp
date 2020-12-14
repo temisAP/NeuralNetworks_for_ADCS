@@ -40,7 +40,7 @@ edit the 0x01 to 0x02 or 0x03. It will slow down the readings thus decreasing st
 #include <SensorReadingsActuators.h>
 #include "Arduino.h"
 
-
+MPU6050 mpu;
 /******************************************************************/
 /******************************************************************
 * CONSTRUCTORS
@@ -53,12 +53,6 @@ Sensor::Sensor(){
   Wire.begin();
   mpu.initialize();   // // The initialize( ) command sets the accelerometer to +/- 2g and the gyroscope to 250% per second by default. These are the most sensitive settings
 
-<<<<<<< HEAD
-  Wire.begin();
-  mpu.initialize();   // // The initialize( ) command sets the accelerometer to +/- 2g and the gyroscope to 250% per second by default. These are the most sensitive settings
-
-=======
->>>>>>> 16551c3833f6cc7450fe2e8df84ccaf704598022
 /***********************  OFFSETS ************************/
   mpu.setXAccelOffset(-2842); // from calibration routine
   mpu.setYAccelOffset(-21); // from calibration routine
@@ -78,10 +72,6 @@ Sensor::Sensor(){
       }
   packetSize = mpu.dmpGetFIFOPacketSize();
   fifoCount = mpu.getFIFOCount();
-<<<<<<< HEAD
-  
-=======
->>>>>>> 16551c3833f6cc7450fe2e8df84ccaf704598022
 
 }
 
