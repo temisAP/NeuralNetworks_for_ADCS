@@ -28,7 +28,7 @@ go to line:272-274 and you"ll find
 
 edit the 0x01 to 0x02 or 0x03. It will slow down the readings thus decreasing stress on your MCU.
 */
- */
+
 
 /***********************  INCLUDE LIBRARIES ************************/
 #include <I2Cdev.h>
@@ -115,7 +115,6 @@ void Sensor::mpu_setup() {
 ******************************************************************/
 void Sensor::readSensor() {
 
-  HardwareSerial Serial;
     /***********************  Obtaining data (angleX, angleY, angleZ) ************************/
   while (fifoCount < packetSize) {fifoCount = mpu.getFIFOCount();}
 

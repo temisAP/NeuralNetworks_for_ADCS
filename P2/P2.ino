@@ -1,44 +1,45 @@
-//#include <math.h>
-//#include <SensorReadingsActuators.h>
-//
+#include <math.h>
+#include <SensorReadingsActuators.h>
+#include <MPU6050_6Axis_MotionApps20.h>  
+
 
 ///*********************** Network Configuration ************************/
-//
-//const int PatternCount = 1;
-//const int InputNodes = 9;   // giros (x,y,z), velocidades (x,y,z), aceleraciones (x,y,z)
-//const int HiddenNodes = 18;  // número de nodos ocultos (solo hay una capa)
-//const int OutputNodes = 3; // motor x, motor y, motor z
-//const int Targetsize = 9;
-//const float LearningRate = 0.3;
-//const float Momentum = 0.9;
-//const float InitialWeightMax = 0.5;
-//const float Success = 0.0004;
-//
-//float Input[PatternCount][InputNodes];
-//
-//float Target[PatternCount][Targetsize] = {
-//  {0, 0, 0, 0, 0, 0, 0, 0, 0}
-//};
-//
-///*********************** End Network Configuration ************************/
-//
-//int i, j, p, q, r;
-//int ReportEvery1000;
-//int RandomizedIndex[PatternCount];
-//long TrainingCycle;
-//float Rando;
-//float Error;
-//float Accum;
-//
-//float Hidden[HiddenNodes];
-//float Output[OutputNodes];
-//float HiddenWeights[InputNodes+1][HiddenNodes];
-//float OutputWeights[HiddenNodes+1][OutputNodes];
-//float HiddenDelta[HiddenNodes];
-//float OutputDelta[OutputNodes];
-//float ChangeHiddenWeights[InputNodes+1][HiddenNodes];
-//float ChangeOutputWeights[HiddenNodes+1][OutputNodes];
-//
+
+const int PatternCount = 1;
+const int InputNodes = 9;   // giros (x,y,z), velocidades (x,y,z), aceleraciones (x,y,z)
+const int HiddenNodes = 18;  // número de nodos ocultos (solo hay una capa)
+const int OutputNodes = 3; // motor x, motor y, motor z
+const int Targetsize = 9;
+const float LearningRate = 0.3;
+const float Momentum = 0.9;
+const float InitialWeightMax = 0.5;
+const float Success = 0.0004;
+
+float Input[PatternCount][InputNodes];
+
+float Target[PatternCount][Targetsize] = {
+  {0, 0, 0, 0, 0, 0, 0, 0, 0}
+};
+
+/*********************** End Network Configuration ************************/
+
+int i, j, p, q, r;
+int ReportEvery1000;
+int RandomizedIndex[PatternCount];
+long TrainingCycle;
+float Rando;
+float Error;
+float Accum;
+
+float Hidden[HiddenNodes];
+float Output[OutputNodes];
+float HiddenWeights[InputNodes+1][HiddenNodes];
+float OutputWeights[HiddenNodes+1][OutputNodes];
+float HiddenDelta[HiddenNodes];
+float OutputDelta[OutputNodes];
+float ChangeHiddenWeights[InputNodes+1][HiddenNodes];
+float ChangeOutputWeights[HiddenNodes+1][OutputNodes];
+
 ///*********************** Hardware ************************/
 //Sensor gyroscope;
 //Actuator motor;
@@ -76,7 +77,7 @@ void setup(){
 //  ReportEvery1000 = 1;
 //  for( p = 0 ; p < PatternCount ; p++ ) {
 //    RandomizedIndex[p] = p ;
-  Serial.println('restart');
+  Serial.println("restart");
 }
 //
 //  /*********************** Neural Network ************************/
@@ -88,7 +89,7 @@ void setup(){
 //******************************************************************/
 void loop (){
 //  NeuralNetwork();
-//  Serial.println('loop');
+  Serial.println("loop");
 }
 //
 ///******************************************************************
