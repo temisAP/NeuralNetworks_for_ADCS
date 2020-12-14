@@ -29,6 +29,7 @@ go to line:272-274 and you"ll find
 edit the 0x01 to 0x02 or 0x03. It will slow down the readings thus decreasing stress on your MCU.
 */
 
+#include <MPU6050_6Axis_MotionApps_V6_12.h>               // esta libreria incluye las funciones para usar el DMP
 
 /***********************  INCLUDE LIBRARIES ************************/
 #include "SensorReadingsActuators.h"
@@ -58,9 +59,15 @@ Sensor::Sensor(){
   mpu.setYGyroOffset(-24); // from calibration routine
   mpu.setZGyroOffset(5); // from calibration routine
 
-/***********************   load and configure the DMP *************************/
 
-  mpu.setDMPEnabled(true);
+  /***********************   load and configure the DMP *************************/
+  devStatus = mpu.dmpInitialize();      //  The dmpInitialize( ) command loads the firmware and configures it. It also initializes the FIFO buffer that’s going to
+                                        // hold the combined data readings coming from the gyroscope and accelerometer. Providing everything has gone well with the initialization the DMP is enabled.
+
+  // make sure it worked (returns 0 if so)
+      if (devStatus == 0) {  // turn on the DMP, now that it's ready
+      mpu.setDMPEnabled(true);
+      }
 
   packetSize = mpu.dmpGetFIFOPacketSize();
   fifoCount = mpu.getFIFOCount();
@@ -99,6 +106,14 @@ Actuator::Actuator() {
 * readSensor
 ******************************************************************/
 void Sensor::readSensor() {
+
+  // definir Quaternion y vectores para las lecturas del DMP
+  Quaternion q;           // [w, x, y, z]
+  VectorInt16 aa;         // [x, y, z]
+  VectorInt16 aaReal;     // [x, y, z]
+  VectorInt16 aaWorld;    // [x, y, z]
+  VectorFloat gravity;    // [x, y, z]
+  float ypr[3];           // [yaw, pitch, roll]
 
     /***********************  Obtaining data (angleX, angleY, angleZ) ************************/
   while (fifoCount < packetSize) {fifoCount = mpu.getFIFOCount();}

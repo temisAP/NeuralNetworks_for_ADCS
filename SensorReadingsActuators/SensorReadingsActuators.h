@@ -18,7 +18,7 @@
 
 #include <I2Cdev.h>
 #include <math.h>
-#include <MPU6050_6Axis_MotionApps20.h>               // esta libreria incluye las funciones para usar el DMP
+#include <MPU6050.h>               // esta libreria incluye las funciones para usar el DMP
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include <Wire.h>                                 // incluir la libreria incluida de Arduino Wire.h de manera que no interfiera con MPU6050_6Axis_MotionApps20.h
 #endif
@@ -53,14 +53,6 @@ class Sensor{
   uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
   uint16_t fifoCount;     // count of all bytes currently in FIFO
   uint8_t fifoBuffer[64]; // FIFO storage buffer
-
-  // definir Quaternion y vectores para las lecturas del DMP
-  Quaternion q;           // [w, x, y, z]
-  VectorInt16 aa;         // [x, y, z]
-  VectorInt16 aaReal;     // [x, y, z]
-  VectorInt16 aaWorld;    // [x, y, z]
-  VectorFloat gravity;    // [x, y, z]
-  float ypr[3];           // [yaw, pitch, roll]
 
   volatile bool mpuInterrupt = false;
 
