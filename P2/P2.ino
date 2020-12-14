@@ -1,6 +1,6 @@
 #include <math.h>
 #include <SensorReadingsActuators.h>
-#include <MPU6050_6Axis_MotionApps20.h>  
+//#include <MPU6050_6Axis_MotionApps20.h>  
 
 
 ///*********************** Network Configuration ************************/
@@ -200,3 +200,4 @@ void loop (){
 //    }
 //  }
 //}
+
