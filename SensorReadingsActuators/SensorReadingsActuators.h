@@ -24,8 +24,6 @@
 #endif
 #include "Arduino.h"
 
-
-
 /******************************************************************
 * Classes
 ******************************************************************/
@@ -36,8 +34,6 @@ class Sensor{
   /***********************  Define parameters ************************/
   //const int mpuAddress = 0x68;  // Puede ser 0x68 o 0x69
   //MPU6050 mpu(mpuAddress);
-  MPU6050 mpu;
-
   //accelerations
   float accX, accY, accZ;
 
