@@ -31,22 +31,18 @@ edit the 0x01 to 0x02 or 0x03. It will slow down the readings thus decreasing st
 
 
 /***********************  INCLUDE LIBRARIES ************************/
-#include <I2Cdev.h>
-#include <math.h>
-#include <MPU6050_6Axis_MotionApps20.h>               // esta libreria incluye las funciones para usar el DMP
-#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-    #include <Wire.h>                                 // incluir la libreria incluida de Arduino Wire.h de manera que no interfiera con MPU6050_6Axis_MotionApps20.h
-#endif
-#include <SensorReadingsActuators.h>
-#include "Arduino.h"
+#include "SensorReadingsActuators.h"
 
 MPU6050 mpu;
+
 /******************************************************************/
 /******************************************************************
 * CONSTRUCTORS
 ******************************************************************/
 /******************************************************************/
 Sensor::Sensor(){
+
+
   /******************************************************************
   * MPU6050 setup
   ******************************************************************/
@@ -63,13 +59,9 @@ Sensor::Sensor(){
   mpu.setZGyroOffset(5); // from calibration routine
 
 /***********************   load and configure the DMP *************************/
-  devStatus = mpu.dmpInitialize();      //  The dmpInitialize( ) command loads the firmware and configures it. It also initializes the FIFO buffer that’s going to
-                                        // hold the combined data readings coming from the gyroscope and accelerometer. Providing everything has gone well with the initialization the DMP is enabled.
 
-  // make sure it worked (returns 0 if so)
-      if (devStatus == 0) {  // turn on the DMP, now that it's ready
-      mpu.setDMPEnabled(true);
-      }
+  mpu.setDMPEnabled(true);
+
   packetSize = mpu.dmpGetFIFOPacketSize();
   fifoCount = mpu.getFIFOCount();
 
