@@ -69,7 +69,6 @@ class Sensor{
 
   /***********************  Define methods ************************/
   Sensor();
-  void mpu_setup();
   void readSensor();
 
 };
