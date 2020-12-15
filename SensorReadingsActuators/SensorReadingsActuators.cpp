@@ -107,7 +107,16 @@ Actuator::Actuator() {
 ******************************************************************/
 void Sensor::readSensor() {
 
-  // definir Quaternion y vectores para las lecturas del DMP
+  // Almacenar el estado anterior para derivar
+  float angleX0 = statevector[0];
+  float angleY0 = statevector[1];
+  float angleZ0 = statevector[2];
+
+  float velX0 = statevector[3];
+  float velY0 = statevector[4];
+  float velZ0 = statevector[5];
+
+  // Definir Quaternion y vectores para las lecturas del DMP
   Quaternion q;           // [w, x, y, z]
   VectorInt16 aa;         // [x, y, z]
   VectorInt16 aaReal;     // [x, y, z]
@@ -115,7 +124,7 @@ void Sensor::readSensor() {
   VectorFloat gravity;    // [x, y, z]
   float ypr[3];           // [yaw, pitch, roll]
 
-    /***********************  Obtaining data (angleX, angleY, angleZ) ************************/
+  /***********************  Obtaining data (angleX, angleY, angleZ) ************************/
   while (fifoCount < packetSize) {fifoCount = mpu.getFIFOCount();}
 
   if (fifoCount == 1024) {
@@ -138,18 +147,28 @@ void Sensor::readSensor() {
           float angleX = ypr[2] * 180/M_PI;     // roll x
         }
     }
+
   /***********************  Data for NN ************************/
 
-
-  float velX=0, velY=0, velZ=0;
-  float accX=0, accY=0, accZ=0;
+  prevtime = currtime;
+  currtime = micros();
 
   statevector[0] = angleX;
   statevector[1] = angleY;
   statevector[2] = angleZ;
+
+  float velX = (angleX-angleX0)/((currtime-prevtime) * 1000000);
+  float velY = (angleY-angleY0)/((currtime-prevtime) * 1000000);
+  float velZ = (angleZ-angleZ0)/((currtime-prevtime) * 1000000);
+
   statevector[3] = velX;
   statevector[4] = velY;
   statevector[5] = velZ;
+
+  float accX = (velX-velX0)/((currtime-prevtime) * 1000000);
+  float accY = (velY-velY0)/((currtime-prevtime) * 1000000);
+  float accZ = (velZ-velZ0)/((currtime-prevtime) * 1000000);
+
   statevector[6] = accX;
   statevector[7] = accY;
   statevector[8] = accZ;

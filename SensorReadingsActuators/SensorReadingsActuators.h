@@ -44,9 +44,11 @@ class Sensor{
   float angleX, angleY, angleZ;
 
   //statevector
-  float statevector[9];
+  float statevector[9] = {0,0,0,0,0,0,0,0,0};
 
   //time -> tbd
+  float prevtime = 0;
+  float currtime = 0;
 
   // definir parámetros del DMP
   uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)

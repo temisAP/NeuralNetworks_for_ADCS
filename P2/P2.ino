@@ -11,7 +11,6 @@ const int Targetsize = 9;
 const float LearningRate = 0.3;
 const float Momentum = 0.9;
 const float InitialWeightMax = 0.5;
-const float Success = 0.0004;
 
 float Input[PatternCount][InputNodes];
 
@@ -22,9 +21,7 @@ float Target[PatternCount][Targetsize] = {
 /*********************** End Network Configuration ************************/
 
 int i, j, p, q, r;
-int ReportEvery1000;
 int RandomizedIndex[PatternCount];
-long TrainingCycle;
 float Rando;
 float Error;
 float Accum;
@@ -64,7 +61,6 @@ void initialiseNN() {
       OutputWeights[j][i] = 2.0 * ( Rando - 0.5 ) * InitialWeightMax ;
     }
   }
-  // Serial.println("Initial/Untrained Outputs: ");
 }
 
 /******************************************************************
@@ -73,10 +69,8 @@ void initialiseNN() {
 void setup(){
   Serial.begin(115200);
   randomSeed(analogRead(3));
-  ReportEvery1000 = 1;
   for( p = 0 ; p < PatternCount ; p++ ) {
     RandomizedIndex[p] = p ;
-  Serial.println("restart");
 }
 
   /*********************** Neural Network ************************/
@@ -88,17 +82,12 @@ void setup(){
 ******************************************************************/
 void loop (){
   NeuralNetwork();
-  Serial.println("loop");
 }
 
 /******************************************************************
 * NeuralNetwork()
 ******************************************************************/
 void NeuralNetwork() {
-
-/*********************** Begin training ************************/
-
-  for( TrainingCycle = 1 ; TrainingCycle < 2147483647 ; TrainingCycle++) {    // como un while
 
 /********** Randomize order of training patterns *****************/
 
@@ -147,7 +136,7 @@ void NeuralNetwork() {
       }
 
       motor.directionControl(); //Llamada a los motores con la salida de la NN
-      gyroscope.readSensor(); //Actualización del vector de estado
+      gyroscope.readSensor();   //Actualización del vector de estado
 
       for( i = 0 ; i < Targetsize; i++ ) {
         OutputDelta[i] = (Target[p][i] - gyroscope.statevector[i]) * Output[i] * (1.0 - Output[i]) ;  // error por derivada de función de activación
@@ -192,10 +181,5 @@ void NeuralNetwork() {
           OutputWeights[j][i] += ChangeOutputWeights[j][i] ;
         }
       }
-
-/********** If error rate is less than pre-determined threshold then end *****************/
-
-    if( Error < Success ) break ;
-    }
   }
 }
