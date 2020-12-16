@@ -29,6 +29,15 @@
 ******************************************************************/
 
 class Sensor{
+  
+  private:
+    // definir parámetros del DMP
+    uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
+    uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
+    uint16_t fifoCount;     // count of all bytes currently in FIFO
+    uint8_t fifoBuffer[64]; // FIFO storage buffer
+
+    volatile bool mpuInterrupt = false;
 
   public:
   /***********************  Define parameters ************************/
@@ -50,14 +59,6 @@ class Sensor{
   float prevtime = 0;
   float currtime = 0;
 
-  // definir parámetros del DMP
-  uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
-  uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
-  uint16_t fifoCount;     // count of all bytes currently in FIFO
-  uint8_t fifoBuffer[64]; // FIFO storage buffer
-
-  volatile bool mpuInterrupt = false;
-
   const float sampleTime = 0.005;
 
   /***********************  Define methods ************************/
@@ -68,8 +69,7 @@ class Sensor{
 
 class Actuator{
 
-public:
-  /***********************  Motor connections ************************/
+private:
   // Motor X connections
   const int enA = 9;
   const int in1 = 8;
@@ -83,6 +83,8 @@ public:
   const int in5 = 11;
   const int in6 = 12;
 
+public:
+  /***********************  Motor connections ************************/
   float MotorIn[3]; //Vx, Vy, Vz
 
   /***********************  Motor Methods ************************/
